@@ -1,3 +1,0 @@
-googletrans==3.1.0a0
-keyboard==0.13.5
-pywinauto==0.6.8
