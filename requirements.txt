@@ -1,0 +1,5 @@
+PyAutoGUI==0.9.53
+pytesseract==0.3.8
+googletrans==3.1.0a0
+Pillow==9.1.1
+pyperclip==1.8.2
