@@ -65,28 +65,18 @@ def defaultButtonFunctions(widget,buttonFunction):
     widget.bind("<Button-1>",lambda x:(widget.configure(bg="#7ab4fa"),buttonFunction(x)))
 
 def translatePopup(text,translation):
-    canvas = Canvas(window,width=180,height=120,bg="#2f84ea",highlightthickness=2, highlightbackground="gray")
+    canvas = create(Canvas(window,width=180,height=120,bg="#2f84ea",highlightthickness=2, highlightbackground="gray"),150,70)
     move(canvas)
-    canvas.place(x=150,y=70)
-    closeButton = Label(canvas,text=" X ",bg="#2f84ea",fg="white")
-    closeButton.place(x=158,y=4)
-    iconButton = Label(canvas,image = photo,bg="#2f84ea")
-    iconButton.place(x=7,y=2)
-    iconButton.bind("<Enter>",lambda x:iconButton.configure(bg="lightblue"))
-    iconButton.bind("<Leave>",lambda x:iconButton.configure(bg="#2f84ea"))
-    iconButton.bind("<Button-1>",lambda x:(iconButton.configure(bg="#D8EFED"),os.startfile(f"https://translate.google.com/?sl=auto&tl={destination_language}&text={text}&op=translate")))
-    copyButton = Label(canvas,image = photo2,bg="#2f84ea")
-    copyButton.place(x=132,y=3)
-    textbox = Text(canvas, height = 5, width = 20)
-    textbox.place(x=9.5,y=30)
+    closeButton = create(Label(canvas,text=" X ",bg="#2f84ea",fg="white"),158,4)
+    iconButton = create(Label(canvas,image = photo,bg="#2f84ea"),8,2)
+    copyButton = create(Label(canvas,image = photo2,bg="#2f84ea"),132,3)
+    textbox = create(Text(canvas, height = 5, width = 20),9.5,30)
     textbox.insert(END,translation)
-    copyButton.bind("<Enter>",lambda x:copyButton.configure(bg="lightblue"))
-    copyButton.bind("<Leave>",lambda x:copyButton.configure(bg="#2f84ea"))
-    copyButton.bind("<Button-1>",lambda x:(copyButton.configure(bg="#D8EFED"),copy(text)))
-    closeButton.bind("<Enter>",lambda x:closeButton.configure(bg="lightblue"))
-    closeButton.bind("<Leave>",lambda x:closeButton.configure(bg="#2f84ea"))
-    closeButton.bind("<Button-1>",lambda x:(closeButton.configure(bg="#D8EFED"),canvas.destroy()))
+    defaultButtonFunctions(iconButton,lambda x:(os.startfile(f"https://translate.google.com/?sl=auto&tl={destination_language}&text={text}&op=translate")))
+    defaultButtonFunctions(copyButton,lambda x:(copy(text)))
+    defaultButtonFunctions(closeButton,lambda x:(canvas.destroy()))
     return canvas
+
 box = None
 def menuBar(cursor):
     canvas = create(Canvas(window,width=40,height=190,bg="#2f84ea",highlightthickness=2, highlightbackground="gray"),10,screen_height/2+50)
