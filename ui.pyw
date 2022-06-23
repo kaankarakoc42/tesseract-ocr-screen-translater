@@ -1,31 +1,35 @@
 from tkinter import *
-import pyautogui
+import pyautogui,os
 from threading import Thread
 import pytesseract
 from googletrans import Translator
-translator = Translator()
 from PIL import Image,ImageTk
+from pyperclip import copy
+
+translator = Translator()
 
 def translate(sentence):
     return translator.translate(sentence,dest="tr")
 
 pytesseract.pytesseract.tesseract_cmd =r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
+
 window=Tk()
 window.title('Screen Translater')
 window.attributes("-fullscreen", True)
 window.wm_attributes("-topmost", True)
-window.wm_attributes("-transparentcolor", "white")
+window.wm_attributes("-transparentcolor", "pink")
+window.config(bg='pink')
 
 screen_width = window.winfo_screenwidth()
 screen_height = window.winfo_screenheight()
 
-window.config(bg='white')
+img= Image.open('t.png').resize((22,22))
+photo = ImageTk.PhotoImage(img)
+img2= Image.open('at.png').resize((20,20))
+photo2 = ImageTk.PhotoImage(img2)
 
-frame1 = Frame(window, width=screen_width, height=screen_height,bg="grey",highlightbackground="black", borderwidth=1)
-frame1.place(x=0,y=0)
-
-canvas = Canvas(window, bg="white",width=screen_width-10, height=screen_height-10)
+canvas = Canvas(window, bg="pink",width=screen_width-10, height=screen_height-10)
 canvas.place(x=5,y=5)
 
 running = False
@@ -34,6 +38,35 @@ rect = None
 label = None
 starting=()
 
+def move(widget):
+    def e(e):
+      x,y=pyautogui.position()
+      widget.place(x=x-100,y=y-10)
+    widget.bind('<B1-Motion>',e)
+
+def translatePopup(text,translation):
+    canvas = Canvas(window,width=180,height=120,bg="#2f84ea",highlightthickness=2, highlightbackground="gray")
+    move(canvas)
+    canvas.place(x=150,y=70)
+    closeButton = Label(canvas,text=" X ",bg="#2f84ea",fg="white")
+    closeButton.place(x=158,y=4)
+    iconButton = Label(canvas,image = photo,bg="#2f84ea")
+    iconButton.place(x=7,y=2)
+    iconButton.bind("<Enter>",lambda x:iconButton.configure(bg="lightblue"))
+    iconButton.bind("<Leave>",lambda x:iconButton.configure(bg="#2f84ea"))
+    iconButton.bind("<Button-1>",lambda x:(iconButton.configure(bg="#D8EFED"),os.startfile(f"https://translate.google.com/?sl=auto&tl=tr&text={text}&op=translate")))
+    copyButton = Label(canvas,image = photo2,bg="#2f84ea")
+    copyButton.place(x=132,y=3)
+    textbox = Text(canvas, height = 5, width = 20)
+    textbox.place(x=9.5,y=30)
+    textbox.insert(END,translation)
+    copyButton.bind("<Enter>",lambda x:copyButton.configure(bg="lightblue"))
+    copyButton.bind("<Leave>",lambda x:copyButton.configure(bg="#2f84ea"))
+    copyButton.bind("<Button-1>",lambda x:(copyButton.configure(bg="#D8EFED"),copy(text)))
+    closeButton.bind("<Enter>",lambda x:closeButton.configure(bg="lightblue"))
+    closeButton.bind("<Leave>",lambda x:closeButton.configure(bg="#2f84ea"))
+    closeButton.bind("<Button-1>",lambda x:(closeButton.configure(bg="#D8EFED"),canvas.destroy()))
+    return canvas
 def start_motor(widget,event):
     global running
     running = True
@@ -43,9 +76,9 @@ def stop_motor(event):
     global running,clicked,label
     running = False
     if clicked:
-       text =translate(pytesseract.image_to_string(pyautogui.screenshot(region=coord))).text
-       label = Label(canvas, text = text)
-       label.place(x=100,y=100)
+       text =pytesseract.image_to_string(pyautogui.screenshot(region=coord))
+       textTranslation =translate(text).text
+       label=translatePopup(text,textTranslation)
        clicked = False
        canvas.coords(rect,0, 0,0,0)
 
@@ -83,3 +116,4 @@ mainCanvas.bind("<ButtonRelease-1>", stop_motor)
 mainCanvas.bind("<Double-Button-1>",lambda e:doubleclick(mainCanvas,e))
 
 window.mainloop()
+
