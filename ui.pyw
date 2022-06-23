@@ -108,7 +108,7 @@ def doubleclick(widget,event):
         rect = canvas.create_rectangle(starting[0], starting[1],1,1, outline='red')
 
                  
-mainCanvas=Canvas(canvas, bg="grey", height=15, width=15)
+mainCanvas=Canvas(canvas, bg="#2f84ea", height=15, width=15)
 
 mainCanvas.place(x=0,y=0)
 mainCanvas.bind("<Button-1>", lambda e:start_motor(mainCanvas,e))
