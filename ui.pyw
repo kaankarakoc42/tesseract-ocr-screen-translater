@@ -7,9 +7,9 @@ from PIL import Image,ImageTk
 from pyperclip import copy
 
 translator = Translator()
-
+destination_language = "tr"
 def translate(sentence):
-    return translator.translate(sentence,dest="tr")
+    return translator.translate(sentence,dest=destination_language)
 
 pytesseract.pytesseract.tesseract_cmd =r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
@@ -28,21 +28,41 @@ img= Image.open('t.png').resize((22,22))
 photo = ImageTk.PhotoImage(img)
 img2= Image.open('at.png').resize((20,20))
 photo2 = ImageTk.PhotoImage(img2)
+img3= Image.open('cursor.png').resize((35,30))
+photo3 = ImageTk.PhotoImage(img3)
+settingsimg= Image.open('settings.png').resize((30,30))
+settingphoto = ImageTk.PhotoImage(settingsimg)
+translateimg= Image.open('translate.png').resize((35,35))
+translatephoto = ImageTk.PhotoImage(translateimg)
 
-canvas = Canvas(window, bg="pink",width=screen_width-10, height=screen_height-10)
+canvas = Canvas(window, bg="pink",width=screen_width-10, height=screen_height-10,highlightcolor="pink",highlightbackground="pink")
 canvas.place(x=5,y=5)
 
 running = False
 clicked= False
 rect = None
 label = None
+cursorAsset = None
 starting=()
+languages = {'Afrikaans': 'af', 'Irish': 'ga', 'Albanian': 'sq', 'Italian': 'it', 'Arabic': 'ar', 'Japanese': 'ja', 'Azerbaijani': 'az', 'Kannada': 'kn', 'Basque': 'eu', 'Korean': 'ko', 'Bengali': 'bn', 'Latin': 'la', 'Belarusian': 'be', 'Latvian': 'lv', 'Bulgarian': 'bg', 'Lithuanian': 'lt', 'Catalan': 'ca', 'Macedonian': 'mk', 'Chinese Simplified': 'zh-CN', 'Malay': 'ms', 'Chinese Traditional': 'zh-TW', 'Maltese': 'mt', 'Croatian': 'hr', 'Norwegian': 'no', 'Czech': 'cs', 'Persian': 'fa', 'Danish': 'da', 'Polish': 'pl', 'Dutch': 'nl', 'Portuguese': 'pt', 'English': 'en', 'Romanian': 'ro', 'Esperanto': 'eo', 'Russian': 'ru', 'Estonian': 'et', 'Serbian': 'sr', 'Filipino': 'tl', 'Slovak': 'sk', 'Finnish': 'fi', 'Slovenian': 'sl', 'French': 'fr', 'Spanish': 'es', 'Galician': 'gl', 'Swahili': 'sw', 'Georgian': 'ka', 'Swedish': 'sv', 'German': 'de', 'Tamil': 'ta', 'Greek': 'el', 'Telugu': 'te', 'Gujarati': 'gu', 'Thai': 'th', 'Haitian Creole': 'ht', 'Turkish': 'tr', 'Hebrew': 'iw', 'Ukrainian': 'uk', 'Hindi':'hi', 'Urdu': 'ur', 'Hungarian': 'hu', 'Vietnamese': 'vi', 'Icelandic': 'is', 'Welsh': 'cy', 'Indonesian': 'id', 'Yiddish': 'yi'}
+tkvar = StringVar(window)
+options = [i for i in list(languages.keys())]
 
-def move(widget):
+def move(widget:Canvas):
     def e(e):
       x,y=pyautogui.position()
-      widget.place(x=x-100,y=y-10)
+      widget.place(x=x-(widget.winfo_width()/2),y=y-(widget.winfo_height()/2))
     widget.bind('<B1-Motion>',e)
+
+
+def create(widget,x,y):
+    widget.place(x=x,y=y)
+    return widget
+
+def defaultButtonFunctions(widget,buttonFunction):
+    widget.bind("<Enter>",lambda x:widget.configure(bg="#84bbfc"))
+    widget.bind("<Leave>",lambda x:widget.configure(bg="#2f84ea"))
+    widget.bind("<Button-1>",lambda x:(widget.configure(bg="#7ab4fa"),buttonFunction(x)))
 
 def translatePopup(text,translation):
     canvas = Canvas(window,width=180,height=120,bg="#2f84ea",highlightthickness=2, highlightbackground="gray")
@@ -54,7 +74,7 @@ def translatePopup(text,translation):
     iconButton.place(x=7,y=2)
     iconButton.bind("<Enter>",lambda x:iconButton.configure(bg="lightblue"))
     iconButton.bind("<Leave>",lambda x:iconButton.configure(bg="#2f84ea"))
-    iconButton.bind("<Button-1>",lambda x:(iconButton.configure(bg="#D8EFED"),os.startfile(f"https://translate.google.com/?sl=auto&tl=tr&text={text}&op=translate")))
+    iconButton.bind("<Button-1>",lambda x:(iconButton.configure(bg="#D8EFED"),os.startfile(f"https://translate.google.com/?sl=auto&tl={destination_language}&text={text}&op=translate")))
     copyButton = Label(canvas,image = photo2,bg="#2f84ea")
     copyButton.place(x=132,y=3)
     textbox = Text(canvas, height = 5, width = 20)
@@ -67,6 +87,35 @@ def translatePopup(text,translation):
     closeButton.bind("<Leave>",lambda x:closeButton.configure(bg="#2f84ea"))
     closeButton.bind("<Button-1>",lambda x:(closeButton.configure(bg="#D8EFED"),canvas.destroy()))
     return canvas
+box = None
+def menuBar(cursor):
+    canvas = create(Canvas(window,width=40,height=190,bg="#2f84ea",highlightthickness=2, highlightbackground="gray"),10,screen_height/2+50)
+    popup = Menu(window, tearoff=0)
+    popup.add_command(label="Github",command=lambda :os.startfile("https://github.com/kaankarakoc42/translater"))
+    def lang():
+        global box
+        x,y = pyautogui.position()
+        tkvar.set(destination_language)
+        def setLang(value):
+            global destination_language,box
+            destination_language = languages[value]
+            box.destroy()
+        box = create(OptionMenu(window,tkvar,*options,command=lambda x:setLang(x)),x+5,y)
+        
+    popup.add_command(label="language",command=lambda :lang())
+    popup.add_separator()
+    popup.add_command(label="Hide",command=lambda :(window.iconify()))
+    def menu_popup(event):
+        try: popup.tk_popup(event.x_root+50, event.y_root, 0)
+        finally: popup.grab_release()
+    settingsButton = create(Label(canvas,image = settingphoto,bg="#2f84ea"),5,10)
+    defaultButtonFunctions(settingsButton,lambda x:(menu_popup(x)))
+    translateButton = create(Label(canvas,image = translatephoto,bg="#2f84ea"),2,50)
+    defaultButtonFunctions(translateButton,lambda x:(cursor()))
+    closeButton = create(Label(canvas,text="Exit",bg="#2f84ea",fg="white"),10,160)
+    defaultButtonFunctions(closeButton,lambda x:window.destroy())
+    move(canvas)
+
 def start_motor(widget,event):
     global running
     running = True
@@ -89,7 +138,7 @@ def move_forward(widget:Canvas,event):
     while running:
          x,y=pyautogui.position()
          wx,wy=widget.winfo_width(),widget.winfo_height()
-         widget.place(x=x-10,y=y-10)
+         widget.place(x=x-(wx/2)-5,y=y-(wy/2))
          if clicked:
             canvas.coords(rect,starting[0], starting[1], x-10,y-10)
             coord = (starting[0]+6,starting[1]+6,x-starting[0]-12,y-starting[1]-12)  
@@ -102,18 +151,24 @@ def doubleclick(widget,event):
     running = True
     clicked = True
     x,y=pyautogui.position()
-    starting=(x-10,y-10)
+    starting=(x-13,y-13)
     Thread(target = lambda :move_forward(widget,event)).start()
     if not rect:
         rect = canvas.create_rectangle(starting[0], starting[1],1,1, outline='red')
 
-                 
-mainCanvas=Canvas(canvas, bg="#2f84ea", height=15, width=15)
+def cursorFunction():
+    global cursorAsset
+    x,y=pyautogui.position()
+    if cursorAsset:
+       cursorAsset.destroy()
+    cursorAsset=create(Label(canvas,image = photo3,bg="pink",width=20,height=20),x+30,y-10)
+    cursorAsset.bind("<Button-1>", lambda e:start_motor(cursorAsset,e))
+    cursorAsset.bind("<ButtonRelease-1>", stop_motor)
+    cursorAsset.bind("<Double-Button-1>",lambda e:doubleclick(cursorAsset,e))
 
-mainCanvas.place(x=0,y=0)
-mainCanvas.bind("<Button-1>", lambda e:start_motor(mainCanvas,e))
-mainCanvas.bind("<ButtonRelease-1>", stop_motor)
-mainCanvas.bind("<Double-Button-1>",lambda e:doubleclick(mainCanvas,e))
+menuBar(cursorFunction)                
+
 
 window.mainloop()
+
 
