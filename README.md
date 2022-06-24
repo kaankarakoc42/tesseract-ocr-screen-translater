@@ -1,7 +1,7 @@
 # tesseract-ocr-screen-translater
 screen translater runs with tesseract-ocr and tkinter-gui
 
-# First install tesseract-orc from here
+# First install tesseract-orc
 https://github.com/UB-Mannheim/tesseract/wiki
 ## Windows
 | Architecture | download url|
