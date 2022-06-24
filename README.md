@@ -6,6 +6,4 @@ https://github.com/UB-Mannheim/tesseract/wiki
 
 
 # shot screen and translate it
-![final](https://user-images.githubusercontent.com/56826739/175353636-386823d6-c2d7-454c-9cb0-8cce20e97995.gif)
-video : https://user-images.githubusercontent.com/56826739/175354061-7ff1d7b1-143b-4aca-be8d-f78a42fa5689.mp4
-
+![gif](https://user-images.githubusercontent.com/56826739/175435703-9b34599f-708c-4212-b214-1aebff663091.gif)
