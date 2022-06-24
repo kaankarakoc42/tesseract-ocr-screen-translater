@@ -6,14 +6,28 @@ from googletrans import Translator
 from PIL import Image,ImageTk
 from pyperclip import copy
 
+#check if somebody didnt read the md file
+windows_path = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+linux_path = r"/usr/share/tesseract-ocr/4.00/tessdata"
+if os.name == "nt":
+   if os.path.exists(windows_path):
+      pytesseract.pytesseract.tesseract_cmd =windows_path
+   else:
+       tkinter.messagebox.showwarning("Exe not found","tesseract-ocr not found check github project page")
+      
+else:
+   if os.path.exists(linux_path):
+      pytesseract.pytesseract.tesseract_cmd =linux_path
+   else:
+         tkinter.messagebox.showwarning("Exe not found","tesseract-ocr not found check github project page (dude read the md file)")
+        
+
 translator = Translator()
 destination_language = "tr"
 def translate(sentence):
     return translator.translate(sentence,dest=destination_language)
 
-pytesseract.pytesseract.tesseract_cmd =r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-
-
+#creating window
 window=Tk()
 window.title('Screen Translater')
 window.attributes("-fullscreen", True)
@@ -24,6 +38,7 @@ window.config(bg='pink')
 screen_width = window.winfo_screenwidth()
 screen_height = window.winfo_screenheight()
 
+#uploading assets
 img= Image.open('t.png').resize((22,22))
 photo = ImageTk.PhotoImage(img)
 img2= Image.open('at.png').resize((20,20))
@@ -105,7 +120,8 @@ def menuBar(cursor):
     closeButton = create(Label(canvas,text="Exit",bg="#2f84ea",fg="white"),10,160)
     defaultButtonFunctions(closeButton,lambda x:window.destroy())
     move(canvas)
-
+    
+#this motor functions are disgusting but I feel too lazy to change it :)
 def start_motor(widget,event):
     global running
     running = True
@@ -132,9 +148,7 @@ def move_forward(widget:Canvas,event):
          if clicked:
             canvas.coords(rect,starting[0], starting[1], x-10,y-10)
             coord = (starting[0]+6,starting[1]+6,x-starting[0]-12,y-starting[1]-12)  
-         i=0
-         while i<=1000:
-               i+=1
+
 
 def doubleclick(widget,event):
     global running,clicked,starting,rect
