@@ -5,6 +5,7 @@ import pytesseract
 from googletrans import Translator
 from PIL import Image,ImageTk
 from pyperclip import copy
+from glob import glob
 
 #check if somebody didnt read the md file
 windows_path = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
