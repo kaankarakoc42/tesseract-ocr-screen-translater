@@ -39,16 +39,20 @@ screen_width = window.winfo_screenwidth()
 screen_height = window.winfo_screenheight()
 
 #uploading assets
-img= Image.open('t.png').resize((22,22))
-photo = ImageTk.PhotoImage(img)
-img2= Image.open('at.png').resize((20,20))
-photo2 = ImageTk.PhotoImage(img2)
-img3= Image.open('cursor.png').resize((35,30))
-photo3 = ImageTk.PhotoImage(img3)
-settingsimg= Image.open('settings.png').resize((30,30))
-settingphoto = ImageTk.PhotoImage(settingsimg)
-translateimg= Image.open('translate.png').resize((35,35))
-translatephoto = ImageTk.PhotoImage(translateimg)
+def Loader(assetFolder):
+    files = glob(f"{assetFolder}/*")
+    paths = {};[paths.update({i.split("\\")[-1].split(".")[0]:i}) for i in files]
+    def loadAsset(paths,name,size=None):
+        if size: return ImageTk.PhotoImage(Image.open(paths[name]).resize(size))
+        else: return ImageTk.PhotoImage(Image.open(paths[name]))
+    return lambda name,size=None:loadAsset(paths,name,size)
+
+loader = Loader("./images")
+photo = loader("t",(22,22))
+photo2 = loader("at",(20,20))
+photo3 = loader("cursor",(35,30))
+settingphoto = loader("settings",(30,30))
+translatephoto = loader("translate",(35,35))
 
 canvas = Canvas(window, bg="pink",width=screen_width-10, height=screen_height-10,highlightcolor="pink",highlightbackground="pink")
 canvas.place(x=5,y=5)
