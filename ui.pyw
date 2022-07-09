@@ -1,3 +1,5 @@
+from tkinter import *
+from tkinter import messagebox
 import pyautogui,os,pytesseract
 from googletrans import Translator
 from PIL import Image,ImageTk
