@@ -1,26 +1,9 @@
-from tkinter import *
-import pyautogui,os
-from threading import Thread
-import pytesseract
+import pyautogui,os,pytesseract
 from googletrans import Translator
 from PIL import Image,ImageTk
 from pyperclip import copy
 from glob import glob
 
-#check if somebody didnt read the md file
-windows_path = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-linux_path = r"/usr/share/tesseract-ocr/4.00/tessdata"
-if os.name == "nt":
-   if os.path.exists(windows_path):
-      pytesseract.pytesseract.tesseract_cmd =windows_path
-   else:
-       tkinter.messagebox.showwarning("Exe not found","tesseract-ocr not found check github project page")
-      
-else:
-   if os.path.exists(linux_path):
-      pytesseract.pytesseract.tesseract_cmd =linux_path
-   else:
-         tkinter.messagebox.showwarning("Exe not found","tesseract-ocr not found check github project page (dude read the md file)")
         
 
 translator = Translator()
@@ -39,7 +22,23 @@ window.config(bg='pink')
 screen_width = window.winfo_screenwidth()
 screen_height = window.winfo_screenheight()
 
+#check if somebody didnt read the md file
+windows_path = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+linux_path = r"/usr/share/tesseract-ocr/4.00/tessdata"
+if os.name == "nt":
+   if os.path.exists(windows_path):
+      pytesseract.pytesseract.tesseract_cmd =windows_path
+   else:
+       messagebox.showwarning("Exe not found","tesseract-ocr not found check github project page")
+      
+else:
+   if os.path.exists(linux_path):
+      pytesseract.pytesseract.tesseract_cmd =linux_path
+   else:
+         messagebox.showwarning("Exe not found","tesseract-ocr not found check github project page (dude read the md file)")
+         
 #uploading assets
+
 def Loader(assetFolder):
     files = glob(f"{assetFolder}/*")
     paths = {};[paths.update({i.split("\\")[-1].split(".")[0]:i}) for i in files]
@@ -55,18 +54,14 @@ photo3 = loader("cursor",(35,30))
 settingphoto = loader("settings",(30,30))
 translatephoto = loader("translate",(35,35))
 
-canvas = Canvas(window, bg="pink",width=screen_width-10, height=screen_height-10,highlightcolor="pink",highlightbackground="pink")
-canvas.place(x=5,y=5)
-
-running = False
-clicked= False
-rect = None
-label = None
-cursorAsset = None
-starting=()
 languages = {'Afrikaans': 'af', 'Irish': 'ga', 'Albanian': 'sq', 'Italian': 'it', 'Arabic': 'ar', 'Japanese': 'ja', 'Azerbaijani': 'az', 'Kannada': 'kn', 'Basque': 'eu', 'Korean': 'ko', 'Bengali': 'bn', 'Latin': 'la', 'Belarusian': 'be', 'Latvian': 'lv', 'Bulgarian': 'bg', 'Lithuanian': 'lt', 'Catalan': 'ca', 'Macedonian': 'mk', 'Chinese Simplified': 'zh-CN', 'Malay': 'ms', 'Chinese Traditional': 'zh-TW', 'Maltese': 'mt', 'Croatian': 'hr', 'Norwegian': 'no', 'Czech': 'cs', 'Persian': 'fa', 'Danish': 'da', 'Polish': 'pl', 'Dutch': 'nl', 'Portuguese': 'pt', 'English': 'en', 'Romanian': 'ro', 'Esperanto': 'eo', 'Russian': 'ru', 'Estonian': 'et', 'Serbian': 'sr', 'Filipino': 'tl', 'Slovak': 'sk', 'Finnish': 'fi', 'Slovenian': 'sl', 'French': 'fr', 'Spanish': 'es', 'Galician': 'gl', 'Swahili': 'sw', 'Georgian': 'ka', 'Swedish': 'sv', 'German': 'de', 'Tamil': 'ta', 'Greek': 'el', 'Telugu': 'te', 'Gujarati': 'gu', 'Thai': 'th', 'Haitian Creole': 'ht', 'Turkish': 'tr', 'Hebrew': 'iw', 'Ukrainian': 'uk', 'Hindi':'hi', 'Urdu': 'ur', 'Hungarian': 'hu', 'Vietnamese': 'vi', 'Icelandic': 'is', 'Welsh': 'cy', 'Indonesian': 'id', 'Yiddish': 'yi'}
 tkvar = StringVar(window)
 options = [i for i in list(languages.keys())]
+rect = None
+startingPoint = ()
+rectDrawingState = False
+realesedButtons=0
+coords = ()
 
 def move(widget:Canvas):
     def e(e):
@@ -98,7 +93,7 @@ def translatePopup(text,translation):
     return canvas
 
 box = None
-def menuBar(cursor):
+def menuBar():
     canvas = create(Canvas(window,width=40,height=190,bg="#2f84ea",highlightthickness=2, highlightbackground="gray"),10,screen_height/2+50)
     popup = Menu(window, tearoff=0)
     popup.add_command(label="Github",command=lambda :os.startfile("https://github.com/kaankarakoc42/translater"))
@@ -121,63 +116,63 @@ def menuBar(cursor):
     settingsButton = create(Label(canvas,image = settingphoto,bg="#2f84ea"),5,10)
     defaultButtonFunctions(settingsButton,lambda x:(menu_popup(x)))
     translateButton = create(Label(canvas,image = translatephoto,bg="#2f84ea"),2,50)
-    defaultButtonFunctions(translateButton,lambda x:(cursor()))
+    defaultButtonFunctions(translateButton,lambda x:(grabScreen()))
     closeButton = create(Label(canvas,text="Exit",bg="#2f84ea",fg="white"),10,160)
     defaultButtonFunctions(closeButton,lambda x:window.destroy())
     move(canvas)
+
     
-#this motor functions are disgusting but I feel too lazy to change it :)
-def start_motor(widget,event):
-    global running
-    running = True
-    Thread(target = lambda :move_forward(widget,event)).start()
-
-def stop_motor(event):
-    global running,clicked,label
-    running = False
-    if clicked:
-       text =pytesseract.image_to_string(pyautogui.screenshot(region=coord))
-       textTranslation =translate(text).text
-       label=translatePopup(text,textTranslation)
-       clicked = False
-       canvas.coords(rect,0, 0,0,0)
-
-def move_forward(widget:Canvas,event):
-    global coord,label
-    if label:
-       label.destroy()
-    while running:
-         x,y=pyautogui.position()
-         wx,wy=widget.winfo_width(),widget.winfo_height()
-         widget.place(x=x-(wx/2)-5,y=y-(wy/2))
-         if clicked:
-            canvas.coords(rect,starting[0], starting[1], x-10,y-10)
-            coord = (starting[0]+6,starting[1]+6,x-starting[0]-12,y-starting[1]-12)  
-
-
-def doubleclick(widget,event):
-    global running,clicked,starting,rect
-    running = True
-    clicked = True
-    x,y=pyautogui.position()
-    starting=(x-13,y-13)
-    Thread(target = lambda :move_forward(widget,event)).start()
+def setStarting(canvas):
+    global startingPoint,rectDrawingState,rect,coords;
+    startingPoint = pyautogui.position()
+    rectDrawingState = True
     if not rect:
-        rect = canvas.create_rectangle(starting[0], starting[1],1,1, outline='red')
+       rect = canvas.create_rectangle(startingPoint[0], startingPoint[1],2,2, outline='red')
 
-def cursorFunction():
-    global cursorAsset
+def setEnding(canvas):
+    global startingPoint,rectDrawingState,rect,coords;
+    if not rectDrawingState: return
     x,y=pyautogui.position()
-    if cursorAsset:
-       cursorAsset.destroy()
-    cursorAsset=create(Label(canvas,image = photo3,bg="pink",width=20,height=20),x+30,y-10)
-    cursorAsset.bind("<Button-1>", lambda e:start_motor(cursorAsset,e))
-    cursorAsset.bind("<ButtonRelease-1>", stop_motor)
-    cursorAsset.bind("<Double-Button-1>",lambda e:doubleclick(cursorAsset,e))
+    canvas.coords(rect,startingPoint[0], startingPoint[1], x,y)
+    coords = [int(i) for i in (startingPoint[0]+1,startingPoint[1]+1,x-startingPoint[0]-1,y-startingPoint[1]-1)]
+    
+def drawingDone(canvas):
+    global rectDrawingState,rect,coords;
+    rectDrawingState = False
+    canvas.delete(rect)
+    canvas.destroy()
+    rect = None
 
-menuBar(cursorFunction)                
+def on_double_click_release(func):
+    global realesedButtons;
+    if not rectDrawingState: return
+    if realesedButtons >= 1:
+       func()
+       realesedButtons = 0
+    realesedButtons+=1
+
+def on_release(canvas):
+    global realesedButtons;
+    drawingDone(canvas)
+    window.attributes('-alpha', 1)
+    window.config(cursor="arrow")
+    window.update()
+    realesedButtons = 0
+    #print(coords,pyautogui.screenshot(region=coords).show())
+    text =pytesseract.image_to_string(pyautogui.screenshot(region=coords))
+    textTranslation = translate(text).text
+    translatePopup(text,textTranslation)
+
+    
+def grabScreen():
+    canvas = create(Canvas(window,width = screen_width,height=screen_height),0,0)
+    window.config(cursor="tcross")
+    window.attributes('-alpha', 0.3)
+    canvas.bind("<Double-Button-1>",lambda x:setStarting(canvas))
+    canvas.bind("<B1-Motion>",lambda x:setEnding(canvas))
+    canvas.bind("<ButtonRelease-1>",lambda x:on_double_click_release(lambda :on_release(canvas)))
 
 
+menuBar()                
 window.mainloop()
-
 
