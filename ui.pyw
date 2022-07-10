@@ -5,7 +5,7 @@ from googletrans import Translator
 from PIL import Image,ImageTk
 from pyperclip import copy
 from glob import glob
-
+from threading import Thread
         
 
 translator = Translator()
@@ -39,22 +39,53 @@ else:
    else:
          messagebox.showwarning("Exe not found","tesseract-ocr not found check github project page (dude read the md file)")
          
+#colors 
+blue="#2f84ea"
+dark = "#1c1d22"
+dbfe = "#84bbfc"
+dbfb = "#7ab4fa"
+theme = blue
+
 #uploading assets
+def replaceColor(picture,datas=None):
+    if datas==None: return picture
+    oldHex,newHex=datas
+    width, height = picture.size
+    hexToRgb =lambda hex:tuple(int(hex.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
+    for x in range(width):
+        for y in range(height):
+            current_color = picture.getpixel( (x,y) )
+            if current_color == hexToRgb(oldHex):
+                picture.putpixel( (x,y), hexToRgb(newHex))
+    return picture
 
 def Loader(assetFolder):
     files = glob(f"{assetFolder}/*")
     paths = {};[paths.update({i.split("\\")[-1].split(".")[0]:i}) for i in files]
-    def loadAsset(paths,name,size=None):
-        if size: return ImageTk.PhotoImage(Image.open(paths[name]).resize(size))
-        else: return ImageTk.PhotoImage(Image.open(paths[name]))
-    return lambda name,size=None:loadAsset(paths,name,size)
+    def loadAsset(paths,name,size=None,replaceColorHex=None):
+        if size: return ImageTk.PhotoImage(replaceColor(Image.open(paths[name]).resize(size),datas=replaceColorHex))
+        else: return ImageTk.PhotoImage(replaceColor(Image.open(paths[name]),datas=replaceColorHex))
+    return lambda name,size=None,replaceColorHex=None:loadAsset(paths,name,size,replaceColorHex)
 
-loader = Loader("./images")
-photo = loader("t",(22,22))
-photo2 = loader("at",(20,20))
-photo3 = loader("cursor",(35,30))
-settingphoto = loader("settings",(30,30))
-translatephoto = loader("translate",(35,35))
+def setTheme(stheme):
+    loader = Loader("./images")
+    if stheme == "dark":
+       theme=dark
+       dbfe = "#373943"
+       dbfb = "#5d6171"
+       d = ("#2f84ea","#1c1d22")
+       photo = loader("t",(22,22),("#2f84ea","#1c1d22"))
+       photo2 = loader("at",(20,20),("#2F84EA","#1c1d22"))
+       settingphoto = loader("settings",(35,35),("#2f84ea","#1c1d22"))
+       translatephoto = loader("translate",(35,35))
+    else:
+       photo = loader("t",(22,22))
+       photo2 = loader("at",(20,20))
+       settingphoto = loader("settings",(30,30))
+       translatephoto = loader("translate",(35,35))
+    globals().update(locals())
+
+setTheme("blue")
 
 languages = {'Afrikaans': 'af', 'Irish': 'ga', 'Albanian': 'sq', 'Italian': 'it', 'Arabic': 'ar', 'Japanese': 'ja', 'Azerbaijani': 'az', 'Kannada': 'kn', 'Basque': 'eu', 'Korean': 'ko', 'Bengali': 'bn', 'Latin': 'la', 'Belarusian': 'be', 'Latvian': 'lv', 'Bulgarian': 'bg', 'Lithuanian': 'lt', 'Catalan': 'ca', 'Macedonian': 'mk', 'Chinese Simplified': 'zh-CN', 'Malay': 'ms', 'Chinese Traditional': 'zh-TW', 'Maltese': 'mt', 'Croatian': 'hr', 'Norwegian': 'no', 'Czech': 'cs', 'Persian': 'fa', 'Danish': 'da', 'Polish': 'pl', 'Dutch': 'nl', 'Portuguese': 'pt', 'English': 'en', 'Romanian': 'ro', 'Esperanto': 'eo', 'Russian': 'ru', 'Estonian': 'et', 'Serbian': 'sr', 'Filipino': 'tl', 'Slovak': 'sk', 'Finnish': 'fi', 'Slovenian': 'sl', 'French': 'fr', 'Spanish': 'es', 'Galician': 'gl', 'Swahili': 'sw', 'Georgian': 'ka', 'Swedish': 'sv', 'German': 'de', 'Tamil': 'ta', 'Greek': 'el', 'Telugu': 'te', 'Gujarati': 'gu', 'Thai': 'th', 'Haitian Creole': 'ht', 'Turkish': 'tr', 'Hebrew': 'iw', 'Ukrainian': 'uk', 'Hindi':'hi', 'Urdu': 'ur', 'Hungarian': 'hu', 'Vietnamese': 'vi', 'Icelandic': 'is', 'Welsh': 'cy', 'Indonesian': 'id', 'Yiddish': 'yi'}
 tkvar = StringVar(window)
@@ -62,7 +93,6 @@ options = [i for i in list(languages.keys())]
 rect = None
 startingPoint = ()
 rectDrawingState = False
-realesedButtons=0
 coords = ()
 
 def move(widget:Canvas):
@@ -77,16 +107,16 @@ def create(widget,x,y):
     return widget
 
 def defaultButtonFunctions(widget,buttonFunction):
-    widget.bind("<Enter>",lambda x:widget.configure(bg="#84bbfc"))
-    widget.bind("<Leave>",lambda x:widget.configure(bg="#2f84ea"))
-    widget.bind("<Button-1>",lambda x:(widget.configure(bg="#7ab4fa"),buttonFunction(x)))
+    widget.bind("<Enter>",lambda x:widget.configure(bg=dbfe))
+    widget.bind("<Leave>",lambda x:widget.configure(bg=theme))
+    widget.bind("<Button-1>",lambda x:(widget.configure(bg=dbfb),buttonFunction(x)))
 
 def translatePopup(text,translation):
-    canvas = create(Canvas(window,width=180,height=120,bg="#2f84ea",highlightthickness=2, highlightbackground="gray"),150,70)
+    canvas = create(Canvas(window,width=180,height=120,bg=theme,highlightthickness=2, highlightbackground="gray"),150,70)
     move(canvas)
-    closeButton = create(Label(canvas,text=" X ",bg="#2f84ea",fg="white"),158,4)
-    iconButton = create(Label(canvas,image = photo,bg="#2f84ea"),8,2)
-    copyButton = create(Label(canvas,image = photo2,bg="#2f84ea"),132,3)
+    closeButton = create(Label(canvas,text=" X ",bg=theme,fg="white"),158,4)
+    iconButton = create(Label(canvas,image = photo,bg=theme),8,2)
+    copyButton = create(Label(canvas,image = photo2,bg=theme),132,3)
     textbox = create(Text(canvas, height = 5, width = 20),9.5,30)
     textbox.insert(END,translation)
     defaultButtonFunctions(iconButton,lambda x:(os.startfile(f"https://translate.google.com/?sl=auto&tl={destination_language}&text={text}&op=translate")))
@@ -96,7 +126,7 @@ def translatePopup(text,translation):
 
 box = None
 def menuBar():
-    canvas = create(Canvas(window,width=40,height=190,bg="#2f84ea",highlightthickness=2, highlightbackground="gray"),10,screen_height/2+50)
+    canvas = create(Canvas(window,width=40,height=190,bg=theme,highlightthickness=2, highlightbackground="gray"),10,screen_height/2+50)
     popup = Menu(window, tearoff=0)
     popup.add_command(label="Github",command=lambda :os.startfile("https://github.com/kaankarakoc42/translater"))
     def lang():
@@ -115,11 +145,11 @@ def menuBar():
     def menu_popup(event):
         try: popup.tk_popup(event.x_root+50, event.y_root, 0)
         finally: popup.grab_release()
-    settingsButton = create(Label(canvas,image = settingphoto,bg="#2f84ea"),5,10)
+    settingsButton = create(Label(canvas,image = settingphoto,bg=theme),2,10)
     defaultButtonFunctions(settingsButton,lambda x:(menu_popup(x)))
-    translateButton = create(Label(canvas,image = translatephoto,bg="#2f84ea"),2,50)
-    defaultButtonFunctions(translateButton,lambda x:(grabScreen()))
-    closeButton = create(Label(canvas,text="Exit",bg="#2f84ea",fg="white"),10,160)
+    translateButton = create(Label(canvas,image = translatephoto,bg=theme),2,55)
+    defaultButtonFunctions(translateButton,lambda x:(Thread(target=grabScreen).start()))
+    closeButton = create(Label(canvas,width=4,text="Exit",bg=theme,fg="white"),4,160)
     defaultButtonFunctions(closeButton,lambda x:window.destroy())
     move(canvas)
 
@@ -146,21 +176,15 @@ def drawingDone(canvas):
     rect = None
 
 def on_double_click_release(func):
-    global realesedButtons;
-    if not rectDrawingState: return
-    if realesedButtons >= 1:
+    global rectDrawingState;
+    if rectDrawingState:
        func()
-       realesedButtons = 0
-    realesedButtons+=1
 
 def on_release(canvas):
-    global realesedButtons;
     drawingDone(canvas)
     window.attributes('-alpha', 1)
     window.config(cursor="arrow")
     window.update()
-    realesedButtons = 0
-    #print(coords,pyautogui.screenshot(region=coords).show())
     text =pytesseract.image_to_string(pyautogui.screenshot(region=coords))
     textTranslation = translate(text).text
     translatePopup(text,textTranslation)
@@ -177,4 +201,3 @@ def grabScreen():
 
 menuBar()                
 window.mainloop()
-
