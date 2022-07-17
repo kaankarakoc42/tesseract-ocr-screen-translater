@@ -19,4 +19,4 @@ Debian,Ubuntu -> ```sudo apt install tesseract-ocr -y```
 ```python ui.pyw```
 
 # Shot screen and translate it
-![gif](https://user-images.githubusercontent.com/56826739/175435703-9b34599f-708c-4212-b214-1aebff663091.gif)
+![a437df7d_AdobeExpress](https://user-images.githubusercontent.com/56826739/179417314-ebc1cfee-405b-419c-a74b-62a84cf98e3d.gif)
