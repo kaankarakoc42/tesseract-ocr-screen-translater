@@ -94,7 +94,7 @@ def Loader(assetFolder):
     paths = {};[paths.update({i.split("\\")[-1].split(".")[0]:i}) for i in files]
     def loadAsset(paths,name,size=None,replaceColorHex=None):
         if size: 
-           replaceColor(Image.open(paths[name]),datas=replaceColorHex).resize(size).save(f"./images/dark/{name}.png")
+           #replaceColor(Image.open(paths[name]),datas=replaceColorHex).resize(size).save(f"./images/dark/{name}.png")
            return ImageTk.PhotoImage(replaceColor(Image.open(paths[name]),datas=replaceColorHex).resize(size))
         else: return ImageTk.PhotoImage(replaceColor(Image.open(paths[name]),datas=replaceColorHex))
     return lambda name,size=None,replaceColorHex=None:loadAsset(paths,name,size,replaceColorHex)
@@ -114,7 +114,7 @@ def setTheme(stheme):
     translatephoto = loader("translateMenuIcon",(35,35))
     globals().update(locals())
 
-setTheme("dark")
+
 
 languages = {'Afrikaans': 'af', 'Irish': 'ga', 'Albanian': 'sq', 'Italian': 'it', 'Arabic': 'ar', 'Japanese': 'ja', 'Azerbaijani': 'az', 'Kannada': 'kn', 'Basque': 'eu', 'Korean': 'ko', 'Bengali': 'bn', 'Latin': 'la', 'Belarusian': 'be', 'Latvian': 'lv', 'Bulgarian': 'bg', 'Lithuanian': 'lt', 'Catalan': 'ca', 'Macedonian': 'mk', 'Chinese Simplified': 'zh-CN', 'Malay': 'ms', 'Chinese Traditional': 'zh-TW', 'Maltese': 'mt', 'Croatian': 'hr', 'Norwegian': 'no', 'Czech': 'cs', 'Persian': 'fa', 'Danish': 'da', 'Polish': 'pl', 'Dutch': 'nl', 'Portuguese': 'pt', 'English': 'en', 'Romanian': 'ro', 'Esperanto': 'eo', 'Russian': 'ru', 'Estonian': 'et', 'Serbian': 'sr', 'Filipino': 'tl', 'Slovak': 'sk', 'Finnish': 'fi', 'Slovenian': 'sl', 'French': 'fr', 'Spanish': 'es', 'Galician': 'gl', 'Swahili': 'sw', 'Georgian': 'ka', 'Swedish': 'sv', 'German': 'de', 'Tamil': 'ta', 'Greek': 'el', 'Telugu': 'te', 'Gujarati': 'gu', 'Thai': 'th', 'Haitian Creole': 'ht', 'Turkish': 'tr', 'Hebrew': 'iw', 'Ukrainian': 'uk', 'Hindi':'hi', 'Urdu': 'ur', 'Hungarian': 'hu', 'Vietnamese': 'vi', 'Icelandic': 'is', 'Welsh': 'cy', 'Indonesian': 'id', 'Yiddish': 'yi'}
 tkvar = StringVar(window)
@@ -123,6 +123,7 @@ rect = None
 startingPoint = ()
 rectDrawingState = False
 coords = ()
+box = None
 
 def move(widget:Canvas):
     def e(e):
@@ -140,6 +141,7 @@ def defaultButtonFunctions(widget,buttonFunction):
     widget.bind("<Leave>",lambda x:widget.configure(bg=theme))
     widget.bind("<Button-1>",lambda x:(widget.configure(bg=dbfb),buttonFunction(x)))
 
+@timer
 def translatePopup(text,translation):
     canvas = create(Canvas(window,width=180,height=120,bg=theme,highlightthickness=2, highlightbackground="gray"),150,70)
     move(canvas)
@@ -153,7 +155,7 @@ def translatePopup(text,translation):
     defaultButtonFunctions(closeButton,lambda x:(canvas.destroy()))
     return canvas
 
-box = None
+@timer
 def menuBar():
     canvas = create(Canvas(window,width=40,height=190,bg=theme,highlightthickness=2, highlightbackground="gray"),10,screen_height/2+50)
     popup = Menu(window, tearoff=0)
@@ -227,6 +229,7 @@ def grabScreen():
     canvas.bind("<B1-Motion>",lambda x:setEnding(canvas))
     canvas.bind("<ButtonRelease-1>",lambda x:on_double_click_release(lambda :on_release(canvas)))
 
+setTheme("dark")
 menuBar()
 window.mainloop()
 
